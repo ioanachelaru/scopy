@@ -52,6 +52,7 @@ int main(int argc, char **argv)
 #endif
 
 
+	QApplication::setAttribute(Qt::AA_ShareOpenGLContexts,true);
 	ScopyApplication app(argc, argv);
 #ifdef LIBM2K_ENABLE_LOG
 	enableLogging(true);
