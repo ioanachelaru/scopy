@@ -16,45 +16,26 @@ __cmake() {
 	mkdir -p build
 	pushd build # build
 
-	if [ "$APPVEYOR" == "true" ] ; then
-		cmake $args ..
-		make -j${NUM_JOBS}
-		sudo make install
-	else
-		cmake -DCMAKE_PREFIX_PATH="$STAGINGDIR" -DCMAKE_INSTALL_PREFIX="$STAGINGDIR" \
-			-DCMAKE_EXE_LINKER_FLAGS="-L${STAGINGDIR}/lib" \
-			$args .. $SILENCED
-		CFLAGS=-I${STAGINGDIR}/include LDFLAGS=-L${STAGINGDIR}/lib make -j${NUM_JOBS} $SILENCED
-		make install
-	fi
-
+	cmake -DCMAKE_PREFIX_PATH="$STAGINGDIR" -DCMAKE_INSTALL_PREFIX="$STAGINGDIR" \
+		-DCMAKE_EXE_LINKER_FLAGS="-L${STAGINGDIR}/lib" \
+		$args .. $SILENCED
+	CFLAGS=-I${STAGINGDIR}/include LDFLAGS=-L${STAGINGDIR}/lib make -j${NUM_JOBS} $SILENCED
+	make -j${NUM_JOBS}
+	sudo make install
 	popd
 }
 
 __make() {
 	$preconfigure
-	if [ "$APPVEYOR" == "true" ] ; then
-		$configure
-		$make -j${NUM_JOBS}
-		sudo $make install
-	else
-		$configure --prefix="$STAGINGDIR" $SILENCED
-		CFLAGS=-I${STAGINGDIR}/include LDFLAGS=-L${STAGINGDIR}/lib $make -j${NUM_JOBS} $SILENCED
-		$SUDO $make install
-	fi
+	$configure --prefix="$STAGINGDIR"
+	$make -j${NUM_JOBS}
+	sudo $make install
 }
 
 __qmake() {
-	if [ "$APPVEYOR" == "true" ] ; then
-		$QMAKE $qtarget
-		make -j${NUM_JOBS}
-		sudo make install
-	else
-		$QMAKE "$qtarget" $SILENCED
-		QMAKE=$QMAKE CFLAGS=-I${STAGINGDIR}/include LDFLAGS=-L${STAGINGDIR}/lib \
-			make -j${NUM_JOBS} $SILENCED
-		$SUDO make install
-	fi
+	$QMAKE $qtarget
+	make -j${NUM_JOBS}
+	sudo make install
 }
 
 __build_common() {
@@ -181,30 +162,21 @@ patch_qwt() {
  QWT_INSTALL_PREFIX = \$\$[QT_INSTALL_PREFIX]
  
  unix {
--    QWT_INSTALL_PREFIX    = /usr/local/qwt-\$\$QWT_VERSION-svn
+-    QWT_INSTALL_PREFIX    = /usr/local
 +    QWT_INSTALL_PREFIX    = $STAGINGDIR
-     # QWT_INSTALL_PREFIX = /usr/local/qwt-\$\$QWT_VERSION-svn-qt-\$\$QT_VERSION
+     # QWT_INSTALL_PREFIX = /usr/local/qwt-\$\$QWT_VERSION-ma-qt-\$\$QT_VERSION
  }
- 
-@@ -107,7 +107,7 @@
- # Otherwise you have to build it from the designer directory.
+
+@@ -42,7 +42,7 @@ QWT_INSTALL_LIBS      = \$\${QWT_INSTALL_PREFIX}/lib
+ # runtime environment of designer/creator.
  ######################################################################
  
--QWT_CONFIG     += QwtDesigner
-+#QWT_CONFIG     += QwtDesigner
+-QWT_INSTALL_PLUGINS   = \$\${QWT_INSTALL_PREFIX}/plugins/designer
++#QWT_INSTALL_PLUGINS   = \$\${QWT_INSTALL_PREFIX}/plugins/designer
  
- ######################################################################
- # Compile all Qwt classes into the designer plugin instead
-@@ -148,7 +148,7 @@
- # Otherwise you have to build them from the tests directory.
- ######################################################################
- 
--QWT_CONFIG     += QwtTests
-+#QWT_CONFIG     += QwtTests
- 
- ######################################################################
- # When Qt has been built as framework qmake wants
-@@ -157,7 +157,7 @@
+ # linux distributors often organize the Qt installation
+ # their way and QT_INSTALL_PREFIX doesn't offer a good
+@@ -163,7 +163,7 @@ QWT_CONFIG     += QwtOpenGL
  
  macx:!static:CONFIG(qt_framework, qt_framework|qt_no_framework) {
  
@@ -215,49 +187,12 @@ patch_qwt() {
  ######################################################################
 --- a/src/src.pro
 +++ b/src/src.pro
-@@ -30,7 +30,8 @@ contains(QWT_CONFIG, QwtDll) {
-     
-         # we increase the SONAME for every minor number
- 
--        QWT_SONAME=libqwt.so.\$\${VER_MAJ}.\$\${VER_MIN}
-+        !macx: QWT_SONAME=libqwt.so.\$\${VER_MAJ}.\$\${VER_MIN}
-+        macx: QWT_SONAME=\$\${QWT_INSTALL_LIBS}/libqwt.dylib
-         QMAKE_LFLAGS *= \$\${QMAKE_LFLAGS_SONAME}\$\${QWT_SONAME}
-         QMAKE_LFLAGS_SONAME=
+@@ -36,6 +36,7 @@ contains(QWT_CONFIG, QwtDll) {
+             QMAKE_LFLAGS_SONAME=
+         }
      }
-EOF
-}
-
-patch_qwtpolar() {
-	patch -p1 <  ${WORKDIR}/projects/scopy/CI/appveyor/patches/qwtpolar-qwt-qt-compat.patch
-
-	patch -p1 <<-EOF
---- a/qwtpolarconfig.pri
-+++ b/qwtpolarconfig.pri
-@@ -70,14 +72,14 @@ QWT_POLAR_INSTALL_FEATURES  = \$\${QWT_POLAR_INSTALL_PREFIX}/features
- # Otherwise you have to build it from the designer directory.
- ######################################################################
- 
--QWT_POLAR_CONFIG     += QwtPolarDesigner
-+#QWT_POLAR_CONFIG     += QwtPolarDesigner
- 
- ######################################################################
- # If you want to auto build the examples, enable the line below
- # Otherwise you have to build them from the examples directory.
- ######################################################################
- 
--QWT_POLAR_CONFIG     += QwtPolarExamples
-+#QWT_POLAR_CONFIG     += QwtPolarExamples
- 
- ######################################################################
- # When Qt has been built as framework qmake wants 
-@@ -86,6 +88,6 @@ QWT_POLAR_CONFIG     += QwtPolarExamples
- 
- macx:CONFIG(qt_framework, qt_framework|qt_no_framework) {
- 
--    QWT_POLAR_CONFIG += QwtPolarFramework
-+    #QWT_POLAR_CONFIG += QwtPolarFramework
++    macx: QWT_SONAME=\$\${QWT_INSTALL_LIBS}/libqwt.dylib
  }
- 
 EOF
 }
+
