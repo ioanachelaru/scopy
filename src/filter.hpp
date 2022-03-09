@@ -46,7 +46,9 @@ namespace adiscope {
 		TOOL_POWER_CONTROLLER,
 		TOOL_DEBUGGER,
 		TOOL_CALIBRATION,
+		TOOL_DATALOGGERTOOL,
 		TOOL_LAUNCHER,
+
 	};
 
 	class Filter
