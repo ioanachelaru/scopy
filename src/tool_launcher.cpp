@@ -398,7 +398,7 @@ void ToolLauncher::_setupToolMenu()
 
 void ToolLauncher::_toolSelected(enum tool tool)
 {
-	Tool *selectedTool = nullptr;
+	QWidget *selectedTool = nullptr;
 	selectedToolId = tool;
 	switch(tool) {
 	case TOOL_OSCILLOSCOPE:
@@ -1315,6 +1315,7 @@ void adiscope::ToolLauncher::destroyContext()
 		dmm = nullptr;
 	}
 
+
 	if (power_control) {
 		delete power_control;
 		power_control = nullptr;
@@ -1585,9 +1586,13 @@ void adiscope::ToolLauncher::enableAdcBasedTools()
 			}
 		}
 
+
+
+
+
 		if (filter->compatible(TOOL_DMM)) {
 			dmm = new DMM(ctx, filter, menu->getToolMenuItemFor(TOOL_DMM),
-				      &js_engine, this);
+					  &js_engine, this);
 			adc_users_group.addButton(menu->getToolMenuItemFor(TOOL_DMM)->getToolStopBtn());
 			toolList.push_back(dmm);
 			connect(dmm, &DMM::showTool, [=]() {
@@ -1602,6 +1607,8 @@ void adiscope::ToolLauncher::enableAdcBasedTools()
 			QObject::connect(debugger, &Debugger::newDebuggerInstance, this,
 					 &ToolLauncher::addDebugWindow);
 		}
+
+
 
 		if (filter->compatible(TOOL_CALIBRATION)) {
 			manual_calibration = new ManualCalibration(ctx, filter,menu->getToolMenuItemFor(TOOL_CALIBRATION),
@@ -1644,7 +1651,7 @@ void adiscope::ToolLauncher::enableDacBasedTools()
 	try {
 		if (filter->compatible(TOOL_SIGNAL_GENERATOR)) {
 			signal_generator = new SignalGenerator(ctx, filter,
-							       menu->getToolMenuItemFor(TOOL_SIGNAL_GENERATOR), &js_engine, this);
+								   menu->getToolMenuItemFor(TOOL_SIGNAL_GENERATOR), &js_engine, this);
 			toolList.push_back(signal_generator);
 			connect(signal_generator, &SignalGenerator::showTool, [=]() {
 				menu->getToolMenuItemFor(TOOL_SIGNAL_GENERATOR)->getToolBtn()->click();
@@ -1733,7 +1740,7 @@ bool adiscope::ToolLauncher::switchContext(const QString& uri)
 
 		if (filter->compatible(TOOL_DIGITALIO)) {
 			dio = new DigitalIO(nullptr, filter, menu->getToolMenuItemFor(TOOL_DIGITALIO),
-					    dioManager, &js_engine, this);
+								dioManager, &js_engine, this);
 			toolList.push_back(dio);
 			connect(dio, &DigitalIO::showTool, [=]() {
 				menu->getToolMenuItemFor(TOOL_DIGITALIO)->getToolBtn()->click();
@@ -1743,7 +1750,7 @@ bool adiscope::ToolLauncher::switchContext(const QString& uri)
 
 		if (filter->compatible(TOOL_POWER_CONTROLLER)) {
 			power_control = new PowerController(ctx, menu->getToolMenuItemFor(TOOL_POWER_CONTROLLER),
-							    &js_engine, this);
+												&js_engine, this);
 			toolList.push_back(power_control);
 			connect(power_control, &PowerController::showTool, [=]() {
 				menu->getToolMenuItemFor(TOOL_POWER_CONTROLLER)->getToolBtn()->click();
@@ -1817,8 +1824,8 @@ bool adiscope::ToolLauncher::switchContext(const QString& uri)
 
 	selectedDev->infoPage()->setCalibrationStatusLabel(tr("Calibrating"));
 
-	calibration_thread = QtConcurrent::run(std::bind(&ToolLauncher::initialCalibration,
-							 this));
+    calibration_thread = QtConcurrent::run(std::bind(&ToolLauncher::initialCalibration,
+                             this));
 
 	calibration_thread_watcher.setFuture(calibration_thread);
 	connect(&calibration_thread_watcher, SIGNAL(finished()), this, SLOT(calibrationThreadWatcherFinished()));
@@ -1900,15 +1907,15 @@ void ToolLauncher::toolDetached(bool detached)
 
 	if (detached) {
 		/* Switch back to the home screen */
-		if (current == static_cast<QWidget *>(tool))
+		if (current == static_cast<QWidget *>(tool->getCentralWidget()))
 			ui->btnHome->click();
 
 		setDynamicProperty(tool->runButton()->parentWidget(), "selected", false);
 	}
 
-	tool->setVisible(detached);
+	tool->getCentralWidget()->setVisible(detached);
 
-	tool->setMinimumSize(910, 490);
+	tool->getCentralWidget()->setMinimumSize(910, 490);
 }
 
 enum tool ToolLauncher::getSelectedToolId() const {
