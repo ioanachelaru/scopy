@@ -66,6 +66,6 @@ private:
 	QLabel *toolStatus;
 };
 } // namespace gui
-} // namespace scopy
+} // namespace adiscope
 
 #endif // CHANNEL_MANAGER_HPP
