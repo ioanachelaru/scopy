@@ -5,7 +5,7 @@
 #include <QVBoxLayout>
 #include "customSwitch.hpp"
 
-using namespace scopy::gui;
+using namespace adiscope::gui;
 
 DataLoggerToolGenericMenu::DataLoggerToolGenericMenu(QWidget *parent):
 	GenericMenu(parent)
@@ -18,7 +18,7 @@ void DataLoggerToolGenericMenu::init(QString title, QColor* color, bool showAll)
 	this->initInteractiveMenu();
 	this->setMenuHeader(title,color,false);
 
-	auto *scaleSection = new scopy::gui::SubsectionSeparator("Settings", false,this);
+	auto *scaleSection = new adiscope::gui::SubsectionSeparator("Settings", false,this);
 
 	//show all
 	if(showAll){
@@ -83,7 +83,7 @@ void DataLoggerToolGenericMenu::init(QString title, QColor* color, bool showAll)
 	h2layout->addWidget(historyStyle);
 	historyLayout->addItem(h2layout);
 
-	auto *historySection = new scopy::gui::SubsectionSeparator("History", true,this);
+	auto *historySection = new adiscope::gui::SubsectionSeparator("History", true,this);
 	historySection->setContent(historyWidget);
 	////end history
 
@@ -109,7 +109,7 @@ void DataLoggerToolGenericMenu::init(QString title, QColor* color, bool showAll)
 
 
 
-	auto *peakHolderSection = new scopy::gui::SubsectionSeparator("Peak Holder", true,this);
+	auto *peakHolderSection = new adiscope::gui::SubsectionSeparator("Peak Holder", true,this);
 	peakHolderSection->setContent(peakHolderWidget);
 	///end peak holder
 
