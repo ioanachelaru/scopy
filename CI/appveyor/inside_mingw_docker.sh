@@ -17,7 +17,9 @@ ARTIFACT_FOLDER=$WORKDIR/artifact_$ARCH
 PYTHON_FILES=/$MINGW_VERSION/lib/python3.*
 DLL_DEPS=$(cat $SRC_FOLDER/CI/appveyor/mingw_dll_deps)
 
-
+# Generate build status info for the about page
+pacman -Qqe > build-status
+cp build-status $GITHUB_WORKSPACE/build-status
 
 echo "### Building Scopy "
 mkdir -p $BUILD_FOLDER

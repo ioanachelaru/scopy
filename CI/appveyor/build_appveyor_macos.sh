@@ -15,6 +15,9 @@ if command -v brew ; then
 	export PATH="${QT_PATH}:$PATH"
 fi
 
+# Generate build status info for the about page
+brew list --versions > build-status
+
 NUM_JOBS=4
 mkdir -p build
 cd build

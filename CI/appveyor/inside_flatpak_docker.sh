@@ -46,6 +46,10 @@ fi
 cp tmp.json org.adi.Scopy.json
 rm tmp.json
 
+# Generate build status info for the about page
+sudo apt list --installed > build-status
+cp build-status $GITHUB_WORKSPACE/build-status
+
 make clean
 make -j4
 

@@ -7,7 +7,7 @@ BUILD_FOLDER=build_${ABI}_${BUILD_TYPE}
 
 build_scopy() {
 
-	git clone $REPO
+	git clone $REPO_URL
 	pushd scopy
 	git submodule update --init --recursive iio-emu
 
@@ -15,6 +15,9 @@ build_scopy() {
 	git checkout FETCH_HEAD
 
 	rm -rf build*
+
+	# Generate build status info for the about page
+	sudo apt list --installed > build-status
 
 	cp $BUILD_ROOT/android_cmake.sh .
 	cp $SCRIPT_HOME_DIR/android_deploy_qt.sh .
